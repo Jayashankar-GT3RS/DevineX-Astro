@@ -1,0 +1,6 @@
+import { Link } from 'react-router';
+import { ArrowUpRight } from 'lucide-react';
+const steps = [{ number: '01', title: 'Find your starting point', text: 'Explore the proposed courses and choose a learning path that matches your interests.' }, { number: '02', title: 'Connect with our team', text: 'Submit an inquiry. Request course details, a brochure, or a callback when information becomes available.' }, { number: '03', title: 'Build your foundations', text: 'At launch, begin with structured concepts and guided exercises, at your chosen learning level.' }, { number: '04', title: 'Deepen your practice', text: 'Progress towards chart analysis, case studies, and responsible practitioner skills.' }];
+export function LearningJourney() {
+ return <section className="journey-section"><div className="section"><div className="center-heading"><div className="eyebrow">03 / FROM CURIOSITY TO UNDERSTANDING</div><h2>Your journey, <em>written in the stars.</em></h2><p>A considered learning process. One meaningful step at a time.</p></div><div className="journey-steps">{steps.map(s => <article key={s.number}><span>{s.number}</span><h3>{s.title}</h3><p>{s.text}</p></article>)}</div><div className="center-action"><Link className="button outline-button" to="/contact">Start with an inquiry <ArrowUpRight size={17}/></Link></div></div></section>;
+}

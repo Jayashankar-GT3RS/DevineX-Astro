@@ -1,0 +1,54 @@
+export const celestialImage = 'https://images.hostinger.com/db638a6d-9c4b-4ea3-8229-75c807efba78/118c62ba-5c5b-4f79-bd5e-ea600225894b.png';
+export const business = {
+  name: 'DevineX Astro',
+  legalName: 'DevineX',
+  phone: '+91 81470 84802',
+  phoneTel: '+918147084802',
+  whatsapp: 'https://wa.me/918147084802',
+  email: 'contact@devinexastro.com',
+  hours: 'Monday–Saturday, 10:00 AM–7:00 PM IST',
+  hoursShort: 'Mon–Sat · 10 AM–7 PM IST',
+  location: 'HSR Layout, Bengaluru, Karnataka, India',
+  domain: 'https://www.devinexastro.com',
+} as const;
+export const courses = [
+ { id: '01', title: 'Foundation Course in Vedic Astrology', category: 'BEGINNER', description: 'Start with the language of Jyotish: planets, signs, houses, and the foundations of a birth chart.', topics: ['Introduction to Jyotish', 'The 12 houses and zodiac signs', 'Planetary relationships'], path: '/vedic-astrology-training' },
+ { id: '02', title: 'Advanced Kundli Reading and Horoscope Analysis', category: 'ADVANCED', description: 'Build a structured approach to chart interpretation, planetary combinations, and timing techniques.', topics: ['Kundli interpretation', 'Yogas and planetary strength', 'Dasha and transit principles'], path: '/vedic-astrology-training' },
+ { id: '03', title: 'Numerology and Name Analysis', category: 'SPECIALISATION', description: 'Explore the principles of numbers and their application to names and personal numerology charts.', topics: ['Core numerology principles', 'Name and number analysis', 'Practical chart exercises'], path: '/numerology-training' },
+ { id: '04', title: 'Nakshatra and Planetary Studies', category: 'SPECIALISATION', description: 'Take a closer look at lunar constellations, planetary qualities, and their place in Vedic interpretation.', topics: ['The 27 nakshatras', 'Planetary significations', 'Interpretation exercises'], path: '/vedic-astrology-training' },
+ { id: '05', title: 'Professional Astrology Practitioner Training', category: 'PROFESSIONAL', description: 'Develop your interpretation process, communication skills, and a responsible approach to practice.', topics: ['Integrated chart analysis', 'Ethics and communication', 'Guided case studies'], path: '/vedic-astrology-training' },
+];
+export const faqs = [
+ { question: 'Can I learn Vedic astrology online as a beginner?', answer: 'Yes. The proposed Foundation Course in Vedic Astrology is designed to introduce beginners to planets, signs, houses, and birth charts. Courses are coming soon; register your interest to receive official launch details.' },
+ { question: 'Are DevineX Astro courses open for enrollment?', answer: 'Not yet. All five proposed courses are currently marked Coming Soon. Apply Now submits an inquiry or registers your interest; it does not confirm admission or collect payment.' },
+ { question: 'What are the course fees, duration, and class timings?', answer: 'Fees, duration, teaching language, class schedules, and delivery details will be announced with the official course launch. No payment is required to submit an inquiry.' },
+ { question: 'Will I receive a certification?', answer: 'Certification details have not yet been announced. DevineX Astro does not currently claim any accreditation, institutional affiliation, or professional recognition.' },
+ { question: 'Do you offer online numerology training?', answer: 'Numerology and Name Analysis is a proposed course. It will introduce number principles and name analysis. The curriculum and launch schedule will be confirmed before enrollment opens.' },
+ { question: 'Are personalised consultations available?', answer: 'Personalised astrology consultations, Vastu services, and spiritual products are planned for a future phase. Consultations and the Astro Shop are not currently available.' },
+];
+export const pages = {
+ 'about': { eyebrow: 'THE DEVINEX VISION', title: 'Ancient wisdom. A modern learning perspective.', description: 'Meet DevineX Astro, an Indian platform being built for structured Vedic astrology education, responsible learning, and future personalised services.', seoTitle: 'About DevineX Astro | Astrology Education in India', kind: 'about' },
+ 'courses': { eyebrow: 'EXPLORE YOUR PATH', title: 'A deeper understanding starts here.', description: 'Explore our proposed professional astrology courses, from beginner Jyotish foundations to advanced Kundli reading and online numerology training.', seoTitle: 'Online Vedic Astrology Courses in India | DevineX Astro', kind: 'courses' },
+ 'vedic-astrology-training': { eyebrow: 'VEDIC ASTROLOGY TRAINING', title: 'Learn Jyotish. Understand the bigger picture.', description: 'Discover proposed online Vedic astrology training in India, with beginner foundations, horoscope analysis, and professional practitioner learning pathways.', seoTitle: 'Vedic Astrology Course Online | Learn Jyotish Online', kind: 'vedic' },
+ 'numerology-training': { eyebrow: 'NUMEROLOGY TRAINING', title: 'Explore the meaning behind the numbers.', description: 'Explore our upcoming online numerology training and name analysis course. Register your interest for curriculum, fees, class schedules, and launch updates.', seoTitle: 'Online Numerology Training & Name Analysis | DevineX Astro', kind: 'numerology' },
+ 'trainers': { eyebrow: 'LEARN THROUGH EXPERIENCED GUIDANCE', title: 'Learn Through Experienced Guidance', description: 'Meet our faculty and explore Vedic Astrology through clear explanations, structured study and practical chart interpretation.', seoTitle: 'Our Trainers | DevineX Astro Astrology Education', kind: 'trainers' },
+ 'blog': { eyebrow: 'KNOWLEDGE CENTRE', title: 'Explore the DevineX Astro Knowledge Centre', description: 'Guides, concepts and practical learning resources from the world of Vedic Astrology. Browse original articles on Jyotish, Kundli analysis, Nakshatras, Navagraha and numerology.', seoTitle: 'Vedic Astrology Blog & Knowledge Centre | DevineX Astro', kind: 'blog' },
+ 'consultations': { eyebrow: 'COMING SOON', title: 'Personal insight, thoughtfully guided.', description: 'Personalised Vedic astrology consultations and related services are planned for a future phase. Register your interest to hear when services become available.', seoTitle: 'Astrology Consultations Coming Soon | DevineX Astro', kind: 'consultations' },
+ 'astro-shop': { eyebrow: 'COMING SOON', title: 'A considered collection. In the making.', description: 'The DevineX Astro Shop is planned for a future phase, with spiritual products and related offerings. Products and purchasing are not yet available.', seoTitle: 'Astro Shop Coming Soon | DevineX Astro', kind: 'shop' },
+ 'contact': { eyebrow: 'LET’S CONNECT', title: 'Your next chapter starts with a conversation.', description: 'Contact DevineX Astro for astrology course inquiries, brochure requests, callback requests, and upcoming Vedic astrology and numerology training in India.', seoTitle: 'Contact DevineX Astro | Astrology Course Inquiries', kind: 'contact' },
+ 'privacy': { eyebrow: 'YOUR PRIVACY', title: 'Your inquiry. Kept private.', description: 'Learn how DevineX Astro handles the contact details and course preferences you provide when submitting an enrollment inquiry or requesting a callback.', seoTitle: 'Privacy Notice | DevineX Astro', kind: 'privacy' },
+} as const;
+export type PageKey = keyof typeof pages;
+export const kundliFaqs = [
+ { question: 'What is a Vedic Kundli?', answer: 'A Vedic Kundli (Janam Kundli) is a traditional astrological birth chart prepared from your exact date, time and place of birth. It maps the positions of the planets and nakshatras at the moment of your birth according to the principles of Jyotish, the Vedic system of astrology.' },
+ { question: 'Is the Kundli really free?', answer: 'Yes. Requesting your personalized Kundli report through DevineX Astro is free. You enter your birth details, register a verified account, and our astrology team prepares your report. There is no payment required to request or download your Kundli.' },
+ { question: 'What birth information do I need to provide?', answer: 'You need your full name, date of birth, time of birth and place of birth (city, state and country). If you are unsure of your exact birth time, you can select Approximate or Unknown — our team will contact you for assistance rather than preparing a chart from an incorrect time.' },
+ { question: 'Why do I need to register an account?', answer: 'Your Kundli contains sensitive personal information. A verified account ensures that only you can access your birth details and download your completed report. We verify your email address before linking your request to your account.' },
+ { question: 'How is my mobile number verified?', answer: 'Mobile number verification uses a one-time SMS code. SMS delivery requires a configured SMS provider, which is currently pending setup. Until SMS verification is operational, your Kundli is linked to your account through verified email login. We never treat an unverified mobile number as verified.' },
+ { question: 'How long does it take to prepare my Kundli?', answer: 'Each Kundli is prepared and reviewed individually by our astrology team. After you submit your request, the status moves through Submitted, In Progress, Under Review and Ready for Download. You will receive an email notification when your report is ready.' },
+ { question: 'How do I download my Kundli PDF?', answer: 'Once your report is ready, log in to your account at www.devinexastro.com/my-kundli and click the Download button. The PDF is delivered securely and can only be downloaded by the verified account that owns the request.' },
+ { question: 'Is my birth information kept private?', answer: 'Yes. Your birth details and Kundli report are stored in a protected database and are never publicly accessible or indexed by search engines. Only you and authorized DevineX Astro administrators can view your information. Kundli PDFs are never attached to notification emails.' },
+ { question: 'Can I upload my existing Kundli chart?', answer: 'Yes. If you already have a Kundli chart prepared elsewhere, you can upload it as a PDF, JPG or PNG file (up to 10 MB). This is optional and helps our team cross-reference or build upon your existing chart.' },
+ { question: 'Is the Kundli a scientifically proven prediction?', answer: 'No. Vedic astrology is a traditional interpretive practice. A Kundli reflects traditional astrological analysis and does not provide scientifically established predictions or substitute for professional medical, legal, financial or psychological advice.' },
+];
+export const navigation = [{ label: 'Home', path: '/' }, { label: 'About us', path: '/about' }, { label: 'Courses', path: '/courses' }, { label: 'Free Kundli', path: '/kundli' }, { label: 'Our trainers', path: '/trainers' }, { label: 'Insights', path: '/blog' }, { label: 'Contact', path: '/contact' }];
