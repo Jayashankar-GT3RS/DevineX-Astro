@@ -25,7 +25,9 @@ import {
 	e_tilt,
 } from 'astronomy-engine';
 import type {
+	ChartStyle,
 	KundliCalculationData,
+	PanchangInfo,
 	PlanetKey,
 	PlanetPlacement,
 	DashaPeriod,
@@ -80,6 +82,20 @@ const PLANET_BODIES: { key: PlanetKey; body: Body }[] = [
 	{ key: 'Venus', body: Body.Venus },
 	{ key: 'Saturn', body: Body.Saturn },
 ];
+
+const TITHI_NAMES = [
+	'Pratipada', 'Dwitiya', 'Tritiya', 'Chaturthi', 'Panchami', 'Shashthi', 'Saptami',
+	'Ashtami', 'Navami', 'Dashami', 'Ekadashi', 'Dwadashi', 'Trayodashi', 'Chaturdashi',
+];
+const YOGA_NAMES = [
+	'Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Atiganda', 'Sukarma',
+	'Dhriti', 'Shula', 'Ganda', 'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra',
+	'Siddhi', 'Vyatipata', 'Variyana', 'Parigha', 'Shiva', 'Siddha', 'Sadhya', 'Shubha',
+	'Shukla', 'Brahma', 'Indra', 'Vaidhriti',
+];
+const KARANA_CYCLE = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
+const KARANA_TAIL = ['Shakuni', 'Chatushpada'];
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const NAK_SPAN = 360 / 27; // 13.333...
 const NAV_SPAN = 30 / 9; // 3.333...
@@ -359,6 +375,33 @@ function findDoshas(planets: PlanetPlacement[]): YogaFinding[] {
 	return doshas;
 }
 
+/**
+ * Panchang for the birth moment, derived from the sidereal Sun/Moon longitudes
+ * (the Moon-Sun difference is the same in tropical and sidereal zodiacs).
+ */
+function computePanchang(dateStr: string, sunLongitude: number, moonLongitude: number): PanchangInfo {
+	const diff = normalize360(moonLongitude - sunLongitude);
+	const tithiIndex = Math.floor(diff / 12); // 0-29
+	const paksha: PanchangInfo['paksha'] = tithiIndex < 15 ? 'Shukla' : 'Krishna';
+	const withinPaksha = tithiIndex % 15; // 0-14
+	const tithiName = withinPaksha === 14
+		? (paksha === 'Shukla' ? 'Purnima' : 'Amavasya')
+		: TITHI_NAMES[withinPaksha];
+
+	const yogaIndex = Math.floor(normalize360(sunLongitude + moonLongitude) / NAK_SPAN) % 27;
+	const karanaIndex = Math.floor(diff / 6) % 60;
+	const karana = karanaIndex === 0
+		? 'Kimstughna'
+		: karanaIndex >= 58
+			? KARANA_TAIL[karanaIndex - 58]
+			: KARANA_CYCLE[(karanaIndex - 1) % 7];
+
+	const [y, m, d] = dateStr.split('-').map(Number);
+	const weekday = WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+
+	return { tithi: `${paksha} ${tithiName}`, tithiIndex: tithiIndex + 1, paksha, yoga: YOGA_NAMES[yogaIndex], karana, weekday };
+}
+
 function computeTransits(): { planet: PlanetKey; signIndex: number; sign: string }[] {
 	const now = new Date();
 	const time = new AstroTime(now);
@@ -384,6 +427,12 @@ export interface BirthInput {
 	birthState?: string;
 	birthCountry?: string;
 	birthTimeAccuracy: string; // exact | approximate | unknown
+	// Optional manual overrides for the instant chart: when both coordinates are
+	// supplied the geocoder is skipped, so an ambiguous place name still resolves.
+	latitude?: number;
+	longitude?: number;
+	timezone?: string; // IANA name, overrides the resolved timezone
+	chartStyle?: ChartStyle;
 }
 
 export interface CalculationResult {
@@ -443,6 +492,68 @@ function validateBirthInput(input: BirthInput): { dateStr: string; timeStr: stri
 	return { dateStr, timeStr };
 }
 
+function isValidTimeZone(timezone: string): boolean {
+	try {
+		new Intl.DateTimeFormat('en-US', { timeZone: timezone });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Resolves the birthplace to coordinates + timezone, honouring manual
+ * coordinates/timezone when the caller supplies them (the instant chart lets a
+ * visitor override an ambiguous place name).
+ */
+async function resolveBirthplace(input: BirthInput, limitations: string[]): Promise<GeocodeResult> {
+	const placeQuery = [input.placeOfBirth, input.birthState, input.birthCountry].filter(Boolean).join(', ');
+	const hasLat = typeof input.latitude === 'number' && Number.isFinite(input.latitude);
+	const hasLon = typeof input.longitude === 'number' && Number.isFinite(input.longitude);
+	const timezone = input.timezone?.trim();
+
+	if (hasLat !== hasLon) {
+		throw new Error('Please provide both latitude and longitude, or neither.');
+	}
+
+	if (hasLat && hasLon) {
+		const latitude = input.latitude!;
+		const longitude = input.longitude!;
+		if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+			throw new Error('Latitude must be between -90 and 90 and longitude between -180 and 180.');
+		}
+
+		if (timezone) {
+			if (!isValidTimeZone(timezone)) {
+				throw new Error(`Unknown timezone "${timezone}". Use an IANA name such as Asia/Kolkata.`);
+			}
+			return { name: placeQuery || 'Custom coordinates', latitude, longitude, timezone };
+		}
+
+		const resolved = await geocode(placeQuery || input.placeOfBirth);
+		if (!resolved) {
+			limitations.push('No timezone was supplied for the custom coordinates and it could not be resolved from the birthplace name, so UTC was used. Add the timezone for an exact chart.');
+		}
+		return {
+			name: placeQuery || 'Custom coordinates',
+			latitude,
+			longitude,
+			timezone: resolved?.timezone ?? 'UTC',
+		};
+	}
+
+	if (timezone && !isValidTimeZone(timezone)) {
+		throw new Error(`Unknown timezone "${timezone}". Use an IANA name such as Asia/Kolkata.`);
+	}
+
+	const geo = await geocode(placeQuery || input.placeOfBirth);
+	if (!geo) {
+		throw new Error(`Could not resolve the birthplace "${placeQuery || input.placeOfBirth}". Check the city name, or enter latitude and longitude manually.`);
+	}
+
+	return timezone ? { ...geo, timezone } : geo;
+}
+
 /**
  * Runs the full Vedic calculation pipeline. Throws when the birthplace cannot
  * be resolved or the timezone is unavailable — the caller flags the request
@@ -454,11 +565,7 @@ export async function calculateKundli(input: BirthInput): Promise<CalculationRes
 	const [y, m, d] = dateStr.split('-').map(Number);
 	const [hh, mm] = timeStr.split(':').map(Number);
 
-	const placeQuery = [input.placeOfBirth, input.birthState, input.birthCountry].filter(Boolean).join(', ');
-	const geo = await geocode(placeQuery || input.placeOfBirth);
-	if (!geo) {
-		throw new Error(`Could not resolve birthplace coordinates for "${placeQuery}". Flag for administrator review.`);
-	}
+	const geo = await resolveBirthplace(input, limitations);
 
 	let utcDate: Date;
 	try {
@@ -529,7 +636,7 @@ export async function calculateKundli(input: BirthInput): Promise<CalculationRes
 		engineVersion: ENGINE_VERSION,
 		ayanamsa: 'lahiri',
 		ayanamsaValue: Math.round(ayanamsa * 10000) / 10000,
-		chartStyle: 'north',
+		chartStyle: input.chartStyle === 'south' ? 'south' : 'north',
 		houseSystem: 'whole_sign',
 		birthplaceName: geo.name,
 		latitude: Math.round(geo.latitude * 10000) / 10000,
@@ -561,6 +668,7 @@ export async function calculateKundli(input: BirthInput): Promise<CalculationRes
 		transits,
 		birthTimeAccuracy: input.birthTimeAccuracy,
 		referenceDate: new Date().toISOString(),
+		panchang: computePanchang(dateStr, sun.longitude, moon.longitude),
 		limitations,
 	};
 

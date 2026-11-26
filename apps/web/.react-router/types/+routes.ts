@@ -92,6 +92,14 @@ type Pages = {
       "slug": string;
     };
   };
+  "/free-kundli": {
+    params: {};
+  };
+  "/:lang/free-kundli": {
+    params: {
+      "lang": string;
+    };
+  };
   "/kundli": {
     params: {};
   };
@@ -173,6 +181,12 @@ type Pages = {
   "/api/health": {
     params: {};
   };
+  "/api/kundli/chart": {
+    params: {};
+  };
+  "/api/kundli/chart-pdf": {
+    params: {};
+  };
   "/api/kundli/link": {
     params: {};
   };
@@ -205,7 +219,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/:lang" | "/trainers" | "/:lang/trainers" | "/:lang/:page" | "/about" | "/vedic-astrology-training" | "/numerology-training" | "/consultations" | "/astro-shop" | "/contact" | "/privacy" | "/courses" | "/:lang/courses" | "/courses/:slug" | "/:lang/courses/:slug" | "/blog" | "/:lang/blog" | "/blog/:slug" | "/:lang/blog/:slug" | "/kundli" | "/:lang/kundli" | "/my-kundli" | "/:lang/my-kundli" | "/login" | "/:lang/login" | "/dashboard" | "/:lang/dashboard" | "/learn/:courseSlug" | "/:lang/learn/:courseSlug" | "/trainer/login" | "/:lang/trainer/login" | "/trainer" | "/:lang/trainer" | "/admin" | "/:lang/admin" | "/:page" | "/sitemap.xml" | "/robots.txt" | "/api/health" | "/api/kundli/link" | "/api/kundli/download/:id" | "/api/kundli/report/:id" | "/api/kundli/generate" | "/api/kundli/admin" | "/api/integrated-ai/stream" | "/api/*";
+    page: "/" | "/:lang" | "/trainers" | "/:lang/trainers" | "/:lang/:page" | "/about" | "/vedic-astrology-training" | "/numerology-training" | "/consultations" | "/astro-shop" | "/contact" | "/privacy" | "/courses" | "/:lang/courses" | "/courses/:slug" | "/:lang/courses/:slug" | "/blog" | "/:lang/blog" | "/blog/:slug" | "/:lang/blog/:slug" | "/free-kundli" | "/:lang/free-kundli" | "/kundli" | "/:lang/kundli" | "/my-kundli" | "/:lang/my-kundli" | "/login" | "/:lang/login" | "/dashboard" | "/:lang/dashboard" | "/learn/:courseSlug" | "/:lang/learn/:courseSlug" | "/trainer/login" | "/:lang/trainer/login" | "/trainer" | "/:lang/trainer" | "/admin" | "/:lang/admin" | "/:page" | "/sitemap.xml" | "/robots.txt" | "/api/health" | "/api/kundli/chart" | "/api/kundli/chart-pdf" | "/api/kundli/link" | "/api/kundli/download/:id" | "/api/kundli/report/:id" | "/api/kundli/generate" | "/api/kundli/admin" | "/api/integrated-ai/stream" | "/api/*";
   };
   "routes/home.tsx": {
     id: "routes/home";
@@ -276,6 +290,13 @@ type RouteFiles = {
     id: "blog-slug-localized";
     page: "/:lang/blog/:slug";
   };
+  "routes/free-kundli.tsx": {
+    id: "routes/free-kundli";
+    page: "/free-kundli";
+  } | {
+    id: "free-kundli-localized";
+    page: "/:lang/free-kundli";
+  };
   "routes/kundli.tsx": {
     id: "routes/kundli";
     page: "/kundli";
@@ -344,6 +365,14 @@ type RouteFiles = {
     id: "routes/api.health";
     page: "/api/health";
   };
+  "routes/api.kundli.chart.ts": {
+    id: "routes/api.kundli.chart";
+    page: "/api/kundli/chart";
+  };
+  "routes/api.kundli.chart-pdf.ts": {
+    id: "routes/api.kundli.chart-pdf";
+    page: "/api/kundli/chart-pdf";
+  };
   "routes/api.kundli.link.ts": {
     id: "routes/api.kundli.link";
     page: "/api/kundli/link";
@@ -396,6 +425,8 @@ type RouteModules = {
   "blog-localized": typeof import("./src/routes/blog.tsx");
   "routes/blog.$slug": typeof import("./src/routes/blog.$slug.tsx");
   "blog-slug-localized": typeof import("./src/routes/blog.$slug.tsx");
+  "routes/free-kundli": typeof import("./src/routes/free-kundli.tsx");
+  "free-kundli-localized": typeof import("./src/routes/free-kundli.tsx");
   "routes/kundli": typeof import("./src/routes/kundli.tsx");
   "kundli-localized": typeof import("./src/routes/kundli.tsx");
   "routes/my-kundli": typeof import("./src/routes/my-kundli.tsx");
@@ -416,6 +447,8 @@ type RouteModules = {
   "routes/sitemap.xml": typeof import("./src/routes/sitemap.xml.ts");
   "routes/robots.txt": typeof import("./src/routes/robots.txt.ts");
   "routes/api.health": typeof import("./src/routes/api.health.ts");
+  "routes/api.kundli.chart": typeof import("./src/routes/api.kundli.chart.ts");
+  "routes/api.kundli.chart-pdf": typeof import("./src/routes/api.kundli.chart-pdf.ts");
   "routes/api.kundli.link": typeof import("./src/routes/api.kundli.link.ts");
   "routes/api.kundli.download.$id": typeof import("./src/routes/api.kundli.download.$id.ts");
   "routes/api.kundli.report.$id": typeof import("./src/routes/api.kundli.report.$id.ts");

@@ -33,3 +33,6 @@ apps/pocketbase/pocketbase.exe
 apps/pocketbase/.tmp/
 apps/pocketbase/pocketbase-darwin*
 apps/pocketbase/pocketbase-linux*
+
+# Local verification screenshots
+screenshot-*.png

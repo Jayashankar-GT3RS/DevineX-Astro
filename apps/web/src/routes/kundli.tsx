@@ -59,6 +59,7 @@ export default function KundliPage() {
 					</p>
 					<div className="hero-actions">
 						<a href="#kundli-form" className="button gold-button">Generate My Free Kundli <ArrowUpRight size={18} /></a>
+						<Link to="/free-kundli" className="button outline-button">Instant Chart — No Signup <ArrowUpRight size={16} /></Link>
 						<Link to="/login?redirect=/my-kundli" className="button outline-button">Already Registered? Login <ArrowUpRight size={16} /></Link>
 					</div>
 					<div className="hero-note"><span className="status-dot" /> Free of charge · No payment required · Private &amp; secure</div>
@@ -99,7 +100,7 @@ export default function KundliPage() {
 					</div>
 					<div className="form-panel kundli-form-panel">
 						<h3>Generate My Kundli</h3>
-						<p>Enter your details to begin. You will register or login after submitting.</p>
+						<p>Enter your details to begin. You will register or login after submitting. Want the chart straight away? <Link to="/free-kundli" className="gold">Use the instant free chart instead</Link>.</p>
 						<KundliForm />
 					</div>
 				</div>

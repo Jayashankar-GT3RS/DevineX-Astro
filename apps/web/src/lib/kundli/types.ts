@@ -32,6 +32,17 @@ export interface YogaFinding {
 	description: string;
 }
 
+export type ChartStyle = 'north' | 'south';
+
+export interface PanchangInfo {
+	tithi: string; // e.g. "Shukla Panchami"
+	tithiIndex: number; // 1-30
+	paksha: 'Shukla' | 'Krishna';
+	yoga: string;
+	karana: string;
+	weekday: string;
+}
+
 export interface KundliCalculationData {
 	engineName: string;
 	engineVersion: string;
@@ -62,6 +73,7 @@ export interface KundliCalculationData {
 	transits: { planet: PlanetKey; signIndex: number; sign: string }[];
 	birthTimeAccuracy: string;
 	referenceDate: string;
+	panchang?: PanchangInfo;
 	limitations: string[];
 }
 

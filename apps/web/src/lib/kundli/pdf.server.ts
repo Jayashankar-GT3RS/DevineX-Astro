@@ -284,3 +284,177 @@ export function generateKundliPdf(input: PdfInput): Promise<Buffer> {
 	doc.end();
 	return done;
 }
+
+/** Draws a South Indian style chart: fixed signs in a 4x4 grid, planets by sign. */
+function drawSouthChart(doc: PDFKit.PDFDocument, calc: KundliCalculationData, x: number, y: number, size: number): void {
+	const cell = size / 4;
+	doc.lineWidth(1).strokeColor(GOLD);
+	doc.rect(x, y, size, size).stroke();
+	for (let i = 1; i < 4; i++) {
+		doc.moveTo(x + cell * i, y).lineTo(x + cell * i, y + size).stroke();
+		doc.moveTo(x, y + cell * i).lineTo(x + size, y + cell * i).stroke();
+	}
+
+	// Merged centre panel.
+	doc.rect(x + cell, y + cell, cell * 2, cell * 2).fillColor(NAVY).fill();
+	doc.rect(x + cell, y + cell, cell * 2, cell * 2).strokeColor(LINE).stroke();
+	doc.fillColor(GOLD).fontSize(11).font('Helvetica-Bold').text('Rashi Chart', x + cell, y + cell * 1.5 - 6, { width: cell * 2, align: 'center' });
+	doc.fillColor(SOFT).fontSize(7).font('Helvetica').text('Lagna marked Asc', x + cell, y + cell * 1.5 + 10, { width: cell * 2, align: 'center' });
+
+	// South Indian sign positions: Pisces top-left, signs proceed clockwise.
+	const cells: Record<number, [number, number]> = {
+		11: [0, 0], 0: [1, 0], 1: [2, 0], 2: [3, 0],
+		10: [0, 1], 3: [3, 1],
+		9: [0, 2], 4: [3, 2],
+		8: [0, 3], 7: [1, 3], 6: [2, 3], 5: [3, 3],
+	};
+
+	for (const [signKey, [col, row]] of Object.entries(cells)) {
+		const signIndex = Number(signKey);
+		const cx = x + col * cell;
+		const cy = y + row * cell;
+		doc.fillColor(GOLD).fontSize(7).font('Helvetica-Bold').text(`${RASHI_SHORT[signIndex]} ${signIndex + 1}`, cx + 4, cy + 4, { width: cell - 8 });
+		if (signIndex === calc.ascendant.signIndex) {
+			doc.fillColor(GOLD).fontSize(6).font('Helvetica-Bold').text('Asc', cx + cell - 22, cy + 4, { width: 18, align: 'right' });
+		}
+		const here = calc.planets.filter(p => p.signIndex === signIndex);
+		if (here.length) {
+			const labels = here.map(p => PLANET_SHORT[p.name] + (p.retrograde ? '(R)' : '')).join(' ');
+			doc.fillColor(LIGHT).fontSize(7).font('Helvetica').text(labels, cx + 3, cy + 18, { width: cell - 6, align: 'center' });
+		}
+	}
+}
+
+export interface ChartPdfInput {
+	calc: KundliCalculationData;
+	fullName?: string;
+	gender?: string;
+}
+
+/**
+ * Standalone birth-chart PDF for the free instant kundli: chart diagram,
+ * planetary positions, panchang, dashas and yogas/doshas — no AI content.
+ */
+export function generateChartPdf(input: ChartPdfInput): Promise<Buffer> {
+	const { calc, fullName, gender } = input;
+	const doc = new PDFDocument({ size: 'A4', margin: MARGIN, bufferPages: true });
+	const chunks: Buffer[] = [];
+	doc.on('data', (c: Buffer) => chunks.push(c));
+	const done = new Promise<Buffer>(resolve => doc.on('end', () => resolve(Buffer.concat(chunks))));
+
+	// Header band.
+	doc.rect(0, 0, A4_WIDTH, 128).fillColor(NAVY).fill();
+	doc.rect(0, 0, A4_WIDTH, 6).fillColor(PURPLE).fill();
+	doc.fillColor(GOLD).fontSize(9).font('Helvetica-Bold').text('DEVINEX ASTRO', MARGIN, 30, { width: CONTENT_WIDTH });
+	doc.fillColor(LIGHT).fontSize(21).font('Helvetica-Bold').text('Janam Kundli', MARGIN, 46, { width: CONTENT_WIDTH });
+	doc.fillColor(SOFT).fontSize(9).font('Helvetica').text(
+		[fullName || 'Seeker', gender, `${calc.birthplaceName}`].filter(Boolean).join('  ·  '),
+		MARGIN, 78, { width: CONTENT_WIDTH },
+	);
+	doc.fillColor(GOLD).fontSize(8).font('Helvetica').text(
+		`${calc.utcTime.slice(0, 10)}  ·  ${calc.panchang?.weekday ?? ''}  ·  Lahiri ayanamsa ${calc.ayanamsaValue}°`,
+		MARGIN, 96, { width: CONTENT_WIDTH },
+	);
+
+	let y = 150;
+	y = heading(doc, 'Birth Details', y);
+	const details: [string, string][] = [
+		['Name', fullName || 'Seeker'],
+		['Gender', gender || '—'],
+		['Birthplace (resolved)', calc.birthplaceName],
+		['Coordinates', `${calc.latitude}, ${calc.longitude}`],
+		['Timezone', calc.timezone],
+		['Birth time accuracy', calc.birthTimeAccuracy],
+		['Ascendant (Lagna)', `${calc.ascendant.sign} — ${calc.ascendant.nakshatra} (Pada ${calc.ascendant.pada})`],
+		['Moon Sign (Chandra Rashi)', calc.moonSign],
+		['Sun Sign (Surya Rashi)', calc.sunSign],
+		['Janma Nakshatra', `${calc.janmaNakshatra} (Pada ${calc.nakshatraPada})`],
+		['House system', `${calc.houseSystem.replace('_', ' ')} · ${calc.chartStyle === 'south' ? 'South Indian' : 'North Indian'} chart`],
+	];
+	for (const [label, value] of details) {
+		doc.fillColor(SOFT).fontSize(9).font('Helvetica').text(label, MARGIN, y, { width: 190 });
+		doc.fillColor(LIGHT).fontSize(9).font('Helvetica-Bold').text(String(value || '—'), MARGIN + 200, y, { width: CONTENT_WIDTH - 200 });
+		y += 18;
+	}
+
+	y += 8;
+	y = heading(doc, calc.chartStyle === 'south' ? 'Rashi Chart (South Indian)' : 'Janam Kundli Chart (North Indian)', y);
+	const chartSize = 232;
+	const chartX = MARGIN + (CONTENT_WIDTH - chartSize) / 2;
+	if (calc.chartStyle === 'south') {
+		drawSouthChart(doc, calc, chartX, y, chartSize);
+	} else {
+		drawNorthChart(doc, calc, chartX, y, chartSize);
+	}
+	doc.fillColor(SOFT).fontSize(7).font('Helvetica-Oblique').text(
+		calc.chartStyle === 'south'
+			? 'South Indian chart: the signs stay fixed; planets are shown in the sign they occupy. Asc marks the ascendant sign.'
+			: 'North Indian chart: houses are fixed and rotate with the ascendant. Numbers indicate the Vedic sign (1=Aries … 12=Pisces). Asc marks the 1st house.',
+		MARGIN, y + chartSize + 8, { width: CONTENT_WIDTH },
+	);
+
+	// --- Page 2: positions, panchang, dashas, yogas ---
+	doc.addPage({ margin: MARGIN });
+	addPageHeader(doc);
+	y = MARGIN + 24;
+	y = heading(doc, 'Planetary Positions', y);
+	const cols = ['Planet', 'Sign', 'Degree', 'House', 'Nakshatra', 'Pada', 'Retro'];
+	const colX = [MARGIN, MARGIN + 90, MARGIN + 150, MARGIN + 210, MARGIN + 270, MARGIN + 390, MARGIN + 440];
+	doc.fillColor(GOLD).fontSize(8).font('Helvetica-Bold');
+	cols.forEach((c, i) => doc.text(c, colX[i], y, { width: 60 }));
+	y += 16;
+	doc.font('Helvetica').fontSize(8).fillColor(LIGHT);
+	for (const p of calc.planets) {
+		y = ensureSpace(doc, y, 16);
+		const row = [p.name, p.sign, `${p.degreeInSign.toFixed(2)}°`, String(p.house), p.nakshatra, String(p.pada), p.retrograde ? 'Yes' : 'No'];
+		row.forEach((c, i) => doc.text(c, colX[i], y, { width: i === 4 ? 110 : 60 }));
+		y += 15;
+	}
+
+	y += 10;
+	y = heading(doc, 'Panchang at Birth', y);
+	const panchang = calc.panchang;
+	const panchangRows: [string, string][] = panchang
+		? [['Tithi', panchang.tithi], ['Paksha', panchang.paksha], ['Yoga', panchang.yoga], ['Karana', panchang.karana], ['Weekday', panchang.weekday]]
+		: [['Panchang', 'Not available for this calculation.']];
+	for (const [label, value] of panchangRows) {
+		doc.fillColor(SOFT).fontSize(9).font('Helvetica').text(label, MARGIN, y, { width: 190 });
+		doc.fillColor(LIGHT).fontSize(9).font('Helvetica-Bold').text(value, MARGIN + 200, y, { width: CONTENT_WIDTH - 200 });
+		y += 18;
+	}
+
+	y += 8;
+	y = heading(doc, 'Vimshottari Dasha Timeline', y);
+	for (const d of calc.dashas.slice(0, 9)) {
+		y = ensureSpace(doc, y, 16);
+		doc.fillColor(GOLD).fontSize(8).font('Helvetica-Bold').text(d.lord, MARGIN, y, { width: 80 });
+		doc.fillColor(LIGHT).fontSize(8).font('Helvetica').text(`${d.start.slice(0, 10)} → ${d.end.slice(0, 10)}`, MARGIN + 90, y, { width: 200 });
+		doc.fillColor(SOFT).text('Antardashas: ' + d.antardashas.slice(0, 3).map(a => a.lord).join(', '), MARGIN + 300, y, { width: CONTENT_WIDTH - 300 });
+		y += 15;
+	}
+
+	if (calc.yogas.length || calc.doshas.length) {
+		y = ensureSpace(doc, y, 70);
+		y = heading(doc, 'Yogas and Doshas Detected', y);
+		for (const finding of [...calc.yogas, ...calc.doshas]) {
+			y = ensureSpace(doc, y, 42);
+			doc.fillColor(GOLD).fontSize(9).font('Helvetica-Bold').text(finding.name, MARGIN, y, { width: CONTENT_WIDTH });
+			y += 13;
+			doc.fillColor(SOFT).fontSize(8).font('Helvetica').text(finding.description, MARGIN, y, { width: CONTENT_WIDTH, lineGap: 2 });
+			y += doc.heightOfString(finding.description, { width: CONTENT_WIDTH, lineGap: 2 }) + 10;
+		}
+	}
+
+	y = ensureSpace(doc, y, 60);
+	y = heading(doc, 'Note', y, 12);
+	body(doc, 'This chart is calculated astronomically (Lahiri ayanamsa, whole-sign houses) from the birth details supplied. It is a free reference chart and does not include the written Vedic interpretation, which is prepared separately. Astrology is not a scientifically established predictor of future events.', y, LIGHT);
+
+	const range = doc.bufferedPageRange();
+	for (let i = range.start; i < range.start + range.count; i++) {
+		doc.switchToPage(i);
+		doc.fillColor(SOFT).fontSize(7).font('Helvetica').text(`Page ${i + 1} of ${range.start + range.count}`, MARGIN, A4_HEIGHT - 30, { width: CONTENT_WIDTH, align: 'center' });
+	}
+
+	doc.end();
+	return done;
+}
